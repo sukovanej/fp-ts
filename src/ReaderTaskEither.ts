@@ -387,6 +387,76 @@ export const asksReaderTaskEither: <R, E, A>(
 ) => ReaderTaskEither<R, E, A> = asksReaderTaskEitherW
 
 /**
+ * Effectfully accesses the environment with IO.
+ *
+ * @example
+ * import * as RTE from 'fp-ts/ReaderTaskEither'
+ * import * as IO from 'fp-ts/IO'
+ *
+ * type Dependency = {
+ *   log: (message: string) => IO.IO<void>
+ * }
+ *
+ * const example =
+ *   (name: string): RTE.ReaderTaskEither<Dependency, never, void> =>
+ *     RTE.asksIO(({ log }) => log(`hello, ${name}`))
+ *
+ * @category combinators
+ * @since 2.13.0
+ */
+export const asksIO = <R, A, E = never>(f: (r: R) => IO<A>): ReaderTaskEither<R, E, A> => pipe(ask<R>(), chainIOK(f))
+
+/**
+ * Effectfully accesses the environment with Task.
+ *
+ * @example
+ * import * as RTE from 'fp-ts/ReaderTaskEither'
+ * import * as T from 'fp-ts/Task'
+ *
+ * type Dependency = {
+ *   fetchValue: T.Task<number>
+ * }
+ *
+ * const example =
+ *   RTE.ReaderTaskEither<Dependency, never, string> =>
+ *     pipe(
+ *       RTE.asksTask(({ fetchName }) => fetchName),
+ *       RTE.map((name) => `hello, ${name}`),
+ *     )
+ *
+ * @category combinators
+ * @since 2.13.0
+ */
+export const asksTask = <R, A, E = never>(f: (r: R) => Task<A>): ReaderTaskEither<R, E, A> =>
+  pipe(ask<R>(), chainTaskK(f))
+
+/**
+ * Effectfully accesses the environment with TaskEither.
+ *
+ * @example
+ * import * as RTE from 'fp-ts/ReaderTaskEither'
+ * import * as TE from 'fp-ts/TaskEither'
+ *
+ * type Error = "network-error"
+ *
+ * type Dependency = {
+ *   fetchValue: TE.TaskEither<Error, number>
+ * }
+ *
+ * const example =
+ *   RTE.ReaderTaskEither<Dependency, Error, string> =>
+ *     pipe(
+ *       RTE.asksTask(({ fetchName }) => fetchName),
+ *       RTE.map((name) => `hello, ${name}`),
+ *     )
+ *
+ * @category combinators
+ * @since 2.13.0
+ */
+export const asksTaskEither = <R, A, E = never>(f: (r: R) => TaskEither<E, A>): ReaderTaskEither<R, E, A> =>
+  pipe(ask<R>(), chainTaskEitherK(f))
+
+/**
  * @category combinators
  * @since 2.0.0
  */
